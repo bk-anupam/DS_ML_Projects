@@ -59,6 +59,16 @@ def get_cv_error(degree_n, poly_model_train, X_cv, y_cv):
     return np.sqrt(mean_squared_error(y_cv, y_cv_predicted))
 
 
+def get_min_cv_error_degree(model_cv_error_2darr):
+    degree_arr = model_cv_error_2darr[:, 0]
+    cv_err_arr = model_cv_error_2darr[:, 1]
+    min_err = np.amin(cv_err_arr)
+    min_err_index = np.where(cv_err_arr == min_err)
+    min_err_degree = degree_arr[min_err_index]
+    return min_err_degree, min_err
+
+
+
 def train_models(sqft_living_train, price_train, sqft_living_cv, price_cv):
     # Dictionary mapping polynomial degree to line plot color
     deg_color_map = {1: 'red', 2: 'green', 3: 'blue', 4: 'cyan', 5: 'grey',
@@ -81,6 +91,8 @@ def train_models(sqft_living_train, price_train, sqft_living_cv, price_cv):
     plt.title('Polynomial regression')
     model_cv_error_arr = np.array(model_cv_error)
     model_train_error_arr = np.array(model_train_error)
+    min_err, min_err_degree = get_min_cv_error_degree(model_cv_error_arr)
+    print("The minimum cross validation error is: {} for polynomial degree: {}".format(min_err, min_err_degree[0]))
     plot_model_train_error_vs_degree(model_cv_error_arr[:, 0], model_train_error_arr[:, 1], model_cv_error_arr[:, 1])
 
 

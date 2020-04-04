@@ -37,13 +37,14 @@ def load_and_extact(file_name, datatype_dict):
 
 
 def normalize_features(input_features):
-    norm = np.sqrt(np.sum(input_features**2))
+    norm = np.sqrt(np.sum(input_features**2, axis=0))
     normalized_features = input_features / norm
     return normalized_features, norm
 
 
 os.chdir("./data/knn")
 train_input_features, train_output_variable = load_and_extact('kc_house_data_small_train.csv', dtype_dict)
+print('No of training examples: {}'.format(len(train_input_features)))
 cv_input_features, cv_output_variable = load_and_extact('kc_house_data_validation.csv', dtype_dict)
 test_input_features, test_output_variable = load_and_extact('kc_house_data_small_test.csv', dtype_dict)
 norm_train_input_features, train_norm = normalize_features(train_input_features)
@@ -86,8 +87,8 @@ def compute_distance_vectorized(training_examples, query_house):
 
 
 def compare_distance_implementation():
-    rowindex_distance_loop = compute_distance_loop(norm_train_input_features[0:9, :], norm_test_input_features[0])
-    rowindex_distance_vectorized = compute_distance_vectorized(norm_train_input_features[0:9, :], norm_test_input_features[0])
+    rowindex_distance_loop = compute_distance_loop(norm_train_input_features[0:10, :], norm_test_input_features[0])
+    rowindex_distance_vectorized = compute_distance_vectorized(norm_train_input_features[0:10, :], norm_test_input_features[0])
     rowindex_loop, min_distance_loop = get_min_distance_row_index(rowindex_distance_loop)
     rowindex_vectorized, min_distance_vectorized = get_min_distance_row_index(rowindex_distance_vectorized)
     print('For loop implementation')
@@ -102,17 +103,31 @@ def compare_distance_implementation():
 
 def one_nearest_neighbour(training_set, query_house):
     rowindex_distance = compute_distance_vectorized(training_set, query_house)
-    print(rowindex_distance[:, 1][-1])
+    distance = rowindex_distance[:, 1]
+    print(distance)
+    print(min(distance))
+    rowindex_min, min_distance = get_min_distance_row_index(rowindex_distance)
+    print(rowindex_min, min_distance)
 
 def run_knn():
-    print('10th training example:')
-    print(norm_train_input_features[9])
-    print('\n1st test example:')
+    print('1st test example:')
     print(norm_test_input_features[0])
+    print('\n10th training example:')
+    print(norm_train_input_features[9])
+    print('\nEucledian distance between 10th training example and 1st test example:')
+    print(np.sqrt(np.sum((norm_train_input_features[9] - norm_test_input_features[0]) ** 2)))
+    distance = {}
+    for i in range(10):
+        distance[i] = np.sqrt(np.sum((norm_train_input_features[i] - norm_test_input_features[0]) ** 2))
+    print(distance)
     # now compute the distance of the query house ( the first test row ) from each of the training examples
     compare_distance_implementation()
-    diff = norm_test_input_features[:] - norm_test_input_features[0]
+    diff = norm_train_input_features[:] - norm_test_input_features[0]
     print(diff[-1].sum())
+    total_row = np.sum(diff ** 2, axis=1)
+    print(total_row.shape)
+    print(diff.shape)
+    print(np.sum(diff**2, axis=1)[15])
     #one_nearest_neighbour(norm_train_input_features, norm_test_input_features[0])
 
 
